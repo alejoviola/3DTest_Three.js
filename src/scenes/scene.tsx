@@ -1,10 +1,12 @@
 //Imports
-import { render } from "@testing-library/react";
 import React from "react";
 import * as Three from "three";
-import { AmbientLight } from "three";
 
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
+import { LightProbeGenerator } from "three/examples/jsm/lights/LightProbeGenerator";
+
+import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader";
 
 //CSS
 import "./scene.css";
@@ -24,39 +26,68 @@ const Scene: React.FC<sceneProps> = () => {
     1000
   );
 
-  const renderer = new Three.WebGLRenderer();
+  const renderer = new Three.WebGLRenderer({ antialias: true });
   renderer.setSize(window.innerWidth, window.innerHeight);
   document.body.appendChild(renderer.domElement);
 
-  camera.position.setZ(30);
+  camera.position.setZ(10);
+
+  // tone mapping
+  renderer.toneMapping = Three.NoToneMapping;
+  renderer.outputEncoding = Three.sRGBEncoding;
 
   ///////////////////////////////////////
 
   //GEOMETRY
-  const geometry = new Three.TorusGeometry(10, 3, 16, 100);
-  const material = new Three.MeshStandardMaterial({
-    color: 0xff6347,
-  });
-  const torus = new Three.Mesh(geometry, material);
 
-  scene.add(torus);
+  const torusGeo = new Three.TorusGeometry(10, 3, 16, 100);
+  const torusMat = new Three.MeshStandardMaterial({ color: 0xff6347 });
+  const torusMesh = new Three.Mesh(torusGeo, torusMat);
+
+  const loader = new GLTFLoader();
+  loader.load(
+    "assets/object/scene.gltf",
+    function (gltf) {
+      scene.add(gltf.scene);
+    },
+    undefined,
+    function (error) {
+      console.error(error);
+    }
+  );
 
   ///////////////////////////////////////
 
   //LIGHT
-  const pointLight = new Three.PointLight(0xffffff, 0.5);
+  const pointLight = new Three.PointLight(0xffffff, 1);
   pointLight.position.set(5, 5, 5);
+  //scene.add(pointLight);
 
-  scene.add(pointLight);
+  //Light
+  const ambientLight = new Three.AmbientLight(0xffffff, 0.1);
+  //scene.add(ambientLight);
 
-  //SceneLight
-  const light = new Three.HemisphereLight(0xffffbb, 0x080820, 1);
-  scene.add(light);
+  //PROBE
+  const lightProbe = new Three.LightProbe();
+  //scene.add(lightProbe);
+
+  //ENV MAP
+  new RGBELoader()
+    .setPath("assets/hdri/")
+    .load("fondo.hdr", function (texture) {
+      texture.mapping = Three.EquirectangularReflectionMapping;
+
+      scene.background = texture;
+      scene.environment = texture;
+    });
 
   ///////////////////////////////////////
 
   //Controls
   const controls = new OrbitControls(camera, renderer.domElement);
+  controls.minDistance = 8;
+  controls.maxDistance = 10;
+  controls.enablePan = false;
 
   //Function that reload
   function animate() {
