@@ -80,7 +80,9 @@ const Scene: React.FC<sceneProps> = () => {
       scene.background = texture;
       scene.environment = texture;
     },
-    undefined,
+    function (load) {
+      console.log(load);
+    },
     function (error) {
       console.error(error);
     }
