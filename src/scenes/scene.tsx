@@ -44,18 +44,6 @@ const Scene: React.FC<sceneProps> = () => {
   const torusMat = new Three.MeshStandardMaterial({ color: 0xff6347 });
   const torusMesh = new Three.Mesh(torusGeo, torusMat);
 
-  const loader = new GLTFLoader();
-  loader.load(
-    "assets/object/scene.gltf",
-    function (gltf) {
-      scene.add(gltf.scene);
-    },
-    undefined,
-    function (error) {
-      console.error(error);
-    }
-  );
-
   ///////////////////////////////////////
 
   //LIGHT
@@ -72,14 +60,31 @@ const Scene: React.FC<sceneProps> = () => {
   //scene.add(lightProbe);
 
   //ENV MAP
-  new RGBELoader()
-    .setPath("assets/hdri/")
-    .load("fondo.hdr", function (texture) {
+  new RGBELoader().setPath("assets/hdri/").load(
+    "fondo.hdr",
+    function (texture) {
+      const loader = new GLTFLoader();
+      loader.load(
+        "assets/object/scene.gltf",
+        function (gltf) {
+          scene.add(gltf.scene);
+        },
+        undefined,
+        function (error) {
+          console.error(error);
+        }
+      );
+
       texture.mapping = Three.EquirectangularReflectionMapping;
 
       scene.background = texture;
       scene.environment = texture;
-    });
+    },
+    undefined,
+    function (error) {
+      console.error(error);
+    }
+  );
 
   ///////////////////////////////////////
 
