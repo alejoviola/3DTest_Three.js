@@ -1,5 +1,6 @@
 //Imports
 import React from "react";
+import { useState } from "react";
 import * as Three from "three";
 
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
@@ -16,6 +17,8 @@ type sceneProps = {
 };
 
 const Scene: React.FC<sceneProps> = () => {
+  const [loading, setLoading] = useState(true);
+
   //Basics
   const scene = new Three.Scene();
 
@@ -59,6 +62,17 @@ const Scene: React.FC<sceneProps> = () => {
   const lightProbe = new Three.LightProbe();
   //scene.add(lightProbe);
 
+  function takeScreenShot() {
+    var a = document.createElement("a");
+
+    renderer.render(scene, camera);
+    a.href = renderer.domElement
+      .toDataURL()
+      .replace("image/png", "image/octet-stream");
+    a.download = "screenshot.png";
+    a.click();
+  }
+
   //ENV MAP
   new RGBELoader().setPath("assets/hdri/").load(
     "fondo.hdr",
@@ -68,6 +82,7 @@ const Scene: React.FC<sceneProps> = () => {
         "assets/object/scene.gltf",
         function (gltf) {
           scene.add(gltf.scene);
+          setLoading(false);
         },
         undefined,
         function (error) {
@@ -105,7 +120,16 @@ const Scene: React.FC<sceneProps> = () => {
   }
   animate();
 
-  return <></>;
+  return (
+    <>
+      {loading && <div id="loader"></div>}
+      {!loading && (
+        <div id="gui">
+          <button onClick={() => takeScreenShot()}>Screenshot</button>
+        </div>
+      )}
+    </>
+  );
 };
 
 export default Scene;
