@@ -62,17 +62,6 @@ const Scene: React.FC<sceneProps> = () => {
   const lightProbe = new Three.LightProbe();
   //scene.add(lightProbe);
 
-  function takeScreenShot() {
-    var a = document.createElement("a");
-
-    renderer.render(scene, camera);
-    a.href = renderer.domElement
-      .toDataURL()
-      .replace("image/png", "image/octet-stream");
-    a.download = "screenshot.png";
-    a.click();
-  }
-
   //ENV MAP
   new RGBELoader().setPath("assets/hdri/").load(
     "fondo.hdr",
@@ -119,6 +108,17 @@ const Scene: React.FC<sceneProps> = () => {
     renderer.render(scene, camera);
   }
   animate();
+
+  const takeScreenShot = () => {
+    var a = document.createElement("a");
+
+    renderer.render(scene, camera);
+    a.href = renderer.domElement
+      .toDataURL()
+      .replace("image/png", "image/octet-stream");
+    a.download = "screenshot.png";
+    a.click();
+  };
 
   return (
     <>
