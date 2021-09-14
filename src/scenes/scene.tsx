@@ -1,6 +1,6 @@
 //Imports
 import React from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import * as Three from "three";
 
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
@@ -17,23 +17,36 @@ type sceneProps = {
 };
 
 const Scene: React.FC<sceneProps> = () => {
+  ////////////
+  // States //
+  ////////////
+
   const [loading, setLoading] = useState(true);
+
+  ///////////////////////////////////////
 
   //Basics
   const scene = new Three.Scene();
 
-  const camera = new Three.PerspectiveCamera(
-    75,
-    window.innerWidth / window.innerHeight,
-    0.1,
-    1000
+  //Camera Viewer
+  const [camera, setCamera] = useState(
+    new Three.PerspectiveCamera(
+      75,
+      window.innerWidth / window.innerHeight,
+      0.1,
+      1000
+    )
   );
+
+  //camera.position.setZ(10);
+
+  ///////////////////////////////////////
+
+  // Renderer Viewport
 
   const renderer = new Three.WebGLRenderer({ antialias: true });
   renderer.setSize(window.innerWidth, window.innerHeight);
   document.body.appendChild(renderer.domElement);
-
-  camera.position.setZ(10);
 
   // tone mapping
   renderer.toneMapping = Three.NoToneMapping;
@@ -84,9 +97,7 @@ const Scene: React.FC<sceneProps> = () => {
       scene.background = texture;
       scene.environment = texture;
     },
-    function (load) {
-      console.log(load);
-    },
+    undefined,
     function (error) {
       console.error(error);
     }
@@ -100,22 +111,46 @@ const Scene: React.FC<sceneProps> = () => {
   controls.maxDistance = 10;
   controls.enablePan = false;
 
+  var a = document.createElement("a");
+
   //Function that reload
   function animate() {
-    requestAnimationFrame(animate);
+    //Update View
     controls.update();
+
+    //Update Size and Render
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.render(scene, camera);
+
+    //Loop
+    requestAnimationFrame(animate);
   }
   animate();
 
-  const takeScreenShot = () => {
-    var a = document.createElement("a");
+  /////////////////
+  // SAVE RENDER //
+  /////////////////
 
-    renderer.render(scene, camera);
-    a.href = renderer.domElement
-      .toDataURL()
-      .replace("image/png", "image/octet-stream");
+  const takeScreenShot = () => {
+    //Camera Render
+    const cameraRender = new Three.PerspectiveCamera(75, 300 / 300, 0.1, 1000);
+
+    cameraRender.position.set(
+      camera.position.x,
+      camera.position.y,
+      camera.position.z
+    );
+
+    cameraRender.rotation.set(
+      camera.rotation.x,
+      camera.rotation.y,
+      camera.rotation.z
+    );
+
+    renderer.setSize(300, 300);
+    renderer.render(scene, cameraRender);
+
+    a.href = renderer.domElement.toDataURL("image/png");
     a.download = "screenshot.png";
     a.click();
   };
@@ -125,6 +160,7 @@ const Scene: React.FC<sceneProps> = () => {
       {loading && <div id="loader"></div>}
       {!loading && (
         <div id="gui">
+          <h4>Now you're a Car Photographer, enjoy!</h4>
           <button onClick={() => takeScreenShot()}>Screenshot</button>
         </div>
       )}
