@@ -3,3 +3,6 @@
 ## npm install
 
 ## npm start
+
+DOCS:
+https://threejs.org/docs/
